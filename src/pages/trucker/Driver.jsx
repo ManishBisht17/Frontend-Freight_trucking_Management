@@ -471,73 +471,70 @@ const Dashboard = () => {
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-fixed">
-            <thead className="bg-slate-50">
-              <tr className="text-left">
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+        <div className="overflow-x-auto p-4">
+          <table className="min-w-full border-separate border-spacing-y-4">
+            <thead>
+              <tr className="text-left bg-slate-100">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 rounded-l-xl border-t border-b border-l border-gray-200">
                   Name
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   MC/Dot No
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   License No
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Gender
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Phone No
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Email
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Country
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   State
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   City
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Zip Code
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">
                   Address
                 </th>
-                <th className="px-4 py-3 text-base font-semibold text-gray-500">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 rounded-r-xl border-t border-b border-r border-gray-200">
                   Action
                 </th>
-              </tr>
-              <tr>
-                <td className="border-t border-slate-200" colSpan="12"></td>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, index) => (
-                  <tr key={index} className="border-t border-slate-100">
-                    <td className="px-3 py-2 text-sm text-slate-700">
+                  <tr key={index}>
+                    <td className="px-3 py-2 text-sm text-slate-700 rounded-l-xl border-t border-b border-l border-gray-200">
                       Loading…
                     </td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 border-t border-b border-gray-200"></td>
+                    <td className="px-3 py-2 rounded-r-xl border-t border-b border-r border-gray-200"></td>
                   </tr>
                 ))
               ) : filteredDrivers.length === 0 ? (
-                <tr className="border-t border-slate-100">
+                <tr>
                   <td
                     className="px-3 py-6 text-center text-sm text-slate-500"
                     colSpan={12}
@@ -547,90 +544,68 @@ const Dashboard = () => {
                 </tr>
               ) : (
                 visibleDrivers.map((driver, i) => (
-                  <tr
-                    key={driver._id || i}
-                    className="border-t border-slate-100 hover:bg-slate-50"
-                  >
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                  <tr key={driver._id || i} className="hover:bg-slate-50">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate rounded-l-xl border-t border-b border-l border-gray-200">
                       {driver.fullName || driver.name || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.mcDot || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700">
-                      <div className="relative group max-w-[70px]">
+                    <td className="px-4 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
+                      <div className="relative group max-w-[65px]">
                         <span className="block truncate">
                           {driver.driverLicense || "-"}
                         </span>
-
-                        {/* Tooltip */}
                         {driver.driverLicense && (
-                          <div
-                            className="absolute left-0 bottom-full mb-1 hidden group-hover:block 
-                      bg-gray-900 text-white text-sm px-3 py-1.5 
-                      rounded-md shadow-lg whitespace-nowrap z-50"
-                          >
+                          <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block bg-gray-900 text-white text-sm px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap z-50">
                             {driver.driverLicense}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.gender || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.phone || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700">
-                      <div className="relative group max-w-[100px]">
+                    <td className="px-4 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
+                      <div className="relative group max-w-[80px]">
                         <span className="block truncate">
                           {driver.email || "-"}
                         </span>
-
-                        {/* Tooltip Above */}
                         {driver.email && (
-                          <div
-                            className="absolute left-0 bottom-full mb-1 hidden group-hover:block 
-                   bg-gray-900 text-white text-sm px-3 py-1.5 
-                   rounded-md shadow-lg whitespace-nowrap z-50"
-                          >
+                          <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block bg-gray-900 text-white text-sm px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap z-50">
                             {driver.email}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.country || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.state || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.city || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700 truncate">
+                    <td className="px-4 py-4 font-medium text-gray-700 truncate border-t border-b border-gray-200">
                       {driver.zipCode || "-"}
                     </td>
-                    <td className="px-4 py-4 font-medium text-gray-700">
+                    <td className="px-4 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
                       <div className="relative group max-w-[80px]">
                         <span className="block truncate">
                           {driver.fullAddress || "-"}
                         </span>
-
-                        {/* Tooltip */}
                         {driver.fullAddress && (
-                          <div
-                            className="absolute left-0 bottom-full mb-1 hidden group-hover:block 
-                   bg-gray-900 text-white text-sm px-3 py-2
-                   rounded-md shadow-lg z-50
-                   whitespace-normal break-words max-w-xs"
-                          >
+                          <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg z-50 whitespace-normal break-words max-w-xs">
                             {driver.fullAddress}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 rounded-r-xl border-t border-b border-r border-gray-200">
                       <button
                         onClick={() => handleOpenEditModal(driver)}
                         className="h-8 px-6 rounded-md border border-blue-600 text-blue-600 text-base font-medium cursor-pointer hover:bg-blue-600 hover:text-white"
@@ -646,11 +621,11 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="mt-2 border border-gray-200 rounded-lg bg-white px-4 py-3 flex items-center justify-between">
+      <div className="mt-2 border border-gray-200 rounded-lg bg-white px-4 py-3 flex items-center justify-between pr-40">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <span>{`Showing ${filteredDrivers.length === 0 ? 0 : pageStart + 1} to ${pageEnd} of ${filteredDrivers.length} drivers`}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mr-8">
           <label className="inline-flex items-center gap-2 font-medium text-gray-700">
             <span>Rows per page</span>
             <select
@@ -667,7 +642,11 @@ const Dashboard = () => {
           <button
             onClick={() => setPage(Math.max(0, clampedPage - 1))}
             disabled={clampedPage === 0}
-            className={`h-8 px-3 rounded-md text-base cursor-pointer ${clampedPage === 0 ? "text-slate-400" : "text-slate-900 font-semibold cursor-pointer"}`}
+            className={`h-8 px-3 text-base ${
+              clampedPage === 0
+                ? "text-slate-400 rounded-full cursor-not-allowed"
+                : "text-slate-900 font-semibold cursor-pointer rounded-md"
+            }`}
           >
             Previous
           </button>
@@ -693,7 +672,11 @@ const Dashboard = () => {
           <button
             onClick={() => setPage(Math.min(totalPages - 1, clampedPage + 1))}
             disabled={clampedPage >= totalPages - 1}
-            className={`h-8 px-3 rounded-md text-base ${clampedPage >= totalPages - 1 ? "text-slate-400" : "text-slate-900 font-semibold cursor-pointer"}`}
+            className={`h-8 px-3 text-base ${
+              clampedPage >= totalPages - 1
+                ? "text-slate-400 rounded-full cursor-not-allowed"
+                : "text-slate-900 font-semibold cursor-pointer rounded-md"
+            }`}
           >
             Next
           </button>
@@ -711,7 +694,7 @@ const Dashboard = () => {
           <Typography
             variant="h5"
             fontWeight={700}
-            sx={{ textAlign: "left", color: headerTextColor }}
+            sx={{ textAlign: "left", color: "white" }}
           >
             Add Driver
           </Typography>
@@ -1115,6 +1098,10 @@ const Dashboard = () => {
                   textTransform: "none",
                   px: 4,
                   borderColor: "#d32f2f",
+                  "&:hover": {
+                background: "red",
+                color: "white",
+              },
                 }}
               >
                 Cancel
@@ -1123,7 +1110,10 @@ const Dashboard = () => {
                 type="submit"
                 variant="contained"
                 color="primary"
-                sx={{ borderRadius: 3, textTransform: "none", px: 4 }}
+                sx={{ borderRadius: 3, textTransform: "none", px: 4, color: "white", "&:hover": {
+                background: "#0a3e72ff",
+                color: "white",
+              }, }}
               >
                 Submit
               </Button>
@@ -1147,44 +1137,47 @@ const Dashboard = () => {
         }}
       >
         <DialogTitle
-          sx={{
-            textAlign: "center",
-            pb: 2,
-            pt: 3,
-            background: brand,
-            color: headerTextColor,
-            position: "relative",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-            }}
-          >
-            <Edit sx={{ fontSize: 28 }} />
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              sx={{ textAlign: "center" }}
-            >
-              Edit Driver Information
-            </Typography>
-          </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              mt: 1,
-              opacity: 0.9,
-              textAlign: "center",
-              color: headerTextColor,
-            }}
-          >
-            Update driver details below
-          </Typography>
-        </DialogTitle>
+  sx={{
+    textAlign: "left",
+    pb: 2,
+    pt: 3,
+    background: brand,
+    color: headerTextColor,
+    position: "relative",
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start", // 👈 changed
+      gap: 1,
+    }}
+  >
+    <Edit sx={{ fontSize: 28, color: "white" }} />
+
+    <Typography
+      variant="h4"
+      fontWeight={700}
+      color="white"
+    >
+      Edit Driver Information
+    </Typography>
+  </Box>
+
+  <Typography
+    variant="body2"
+    sx={{
+      mt: 1,
+      opacity: 0.9,
+      color: "white",
+      ml: 6, // 👈 changed
+      textAlign: "left", // 👈 changed
+    }}
+  >
+    Update driver details below
+  </Typography>
+</DialogTitle>
 
         <DialogContent
           sx={{
@@ -1611,44 +1604,55 @@ const Dashboard = () => {
             </Paper>
 
             <DialogActions
-              sx={{
-                mt: 4,
-                justifyContent: "center",
-                gap: 2,
-                px: 0,
-              }}
-            >
-              <Button
-                onClick={handleCloseEditModal}
-                variant="outlined"
-                size="large"
-                sx={{
-                  borderRadius: 3,
-                  borderColor: "#d32f2f",
-                  color: "#d32f2f",
-                  textTransform: "none",
-                  px: 4,
-                  py: 1.5,
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#d32f2f",
-                    color: "#d32f2f",
-                    //  backgroundColor: '#eba8b2ff'
-                  },
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                color="primary"
-                sx={{ borderRadius: 3, textTransform: "none", px: 4 }}
-              >
-                Update Driver
-              </Button>
-            </DialogActions>
+  sx={{
+    mt: 2,
+    justifyContent: "flex-end", // 👈 move to right
+    gap: 1,
+    px: 3,
+  }}
+>
+  <Button
+  onClick={handleCloseEditModal}
+  variant="outlined"
+  size="large"
+  sx={{
+    borderRadius: 3,
+    textTransform: "none",
+    px: 4,
+    py: 1.2,
+    fontWeight: 600,
+    backgroundColor: "transparent",
+    color: "#d32f2f",
+    borderColor: "#d32f2f",
+    "&:hover": {
+      backgroundColor: "#d32f2f",
+      borderColor: "#d32f2f",
+      color: "white",
+    },
+  }}
+>
+  Cancel
+</Button>
+
+  <Button
+  type="submit"
+  variant="contained"
+  size="large"
+  sx={{
+    borderRadius: 3,
+    textTransform: "none",
+    px: 4,
+    py: 1.2,
+    fontWeight: 600,
+    color: "white",
+    "&:hover": {
+      filter: "brightness(1.15)",
+    },
+  }}
+>
+  Update Driver
+</Button>
+</DialogActions>
           </Box>
         </DialogContent>
       </Dialog>
