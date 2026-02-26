@@ -54,6 +54,9 @@ const Yard = () => {
   const [selectedYard, setSelectedYard] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     yardName: '',
     address: '',
@@ -189,9 +192,11 @@ const Yard = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteYard = async (yardId) => {
-    if (!window.confirm('Are you sure you want to delete this yard?')) {
-      return;
+  const handleDeleteYard = async (yardId, skipConfirm = false) => {
+    if (!skipConfirm) {
+      if (!window.confirm('Are you sure you want to delete this yard?')) {
+        return;
+      }
     }
 
     try {
@@ -217,6 +222,29 @@ const Yard = () => {
       window.alertify.error(err.message || 'Failed to delete yard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteDialogOpen = (yard) => {
+    setDeleteTarget(yard);
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleDeleteDialogClose = () => {
+    if (deleting) return;
+    setConfirmDeleteOpen(false);
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget?._id) return;
+    try {
+      setDeleting(true);
+      await handleDeleteYard(deleteTarget._id, true);
+      setConfirmDeleteOpen(false);
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -328,6 +356,23 @@ const Yard = () => {
     );
   });
 
+  const totalItems = filteredData ? filteredData.length : 0;
+  const totalPages = Math.max(1, Math.ceil((totalItems || 1) / rowsPerPage));
+  const clampedPage = Math.min(page, totalPages - 1);
+  const pageStart = clampedPage * rowsPerPage;
+  const pageEnd = Math.min(totalItems, pageStart + rowsPerPage);
+  const visibleYards = (filteredData || []).slice(pageStart, pageEnd);
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    const start = Math.max(1, clampedPage + 1 - Math.floor(maxVisible / 2));
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    if (start > 1) pages.push(1, '…');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages) pages.push('…', totalPages);
+    return pages;
+  };
+
   // Yard Skeleton Loading Component
   const YardSkeleton = () => (
     <Box sx={{ p: 3 }}>
@@ -386,275 +431,246 @@ const Yard = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h5" fontWeight={700}>
-            Yard Management
-          </Typography>
-          <Chip
-            label={`${yardsData.length} Yard${yardsData.length !== 1 ? 's' : ''}`}
-            color="primary"
-            sx={{ fontWeight: 600 }}
-          />
-        </Box>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Search yards..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search color="primary" />
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: 2,
-                fontSize: '0.85rem',
-                px: 1,
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddYard}
-            sx={{
-              backgroundColor: '#1976d2',
-              color: 'white',
-              px: 3,
-              py: 1,
-              textTransform: 'none',
-              fontWeight: 600,
-              borderRadius: 2,
-              '&:hover': {
-                backgroundColor: '#0d47a1',
-              },
-            }}
-          >
-            Add Yard
-          </Button>
-        </Stack>
-      </Box>
-
-      <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Table
-          sx={{
-            borderRadius: 3,
-            overflow: 'hidden',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <TableHead>
-            <TableRow
-              sx={{
-                background: 'linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%)',
-              }}
+      <div className="mb-2 flex items-center gap-2">
+        <div className="text-2xl font-semibold text-gray-700">Yard Management</div>
+        <span className="inline-block rounded-full text-white text-base font-semibold px-3 py-1"
+              style={{ backgroundColor: '#1976d2' }}>
+          {yardsData.length} {yardsData.length === 1 ? 'Yard' : 'Yards'}
+        </span>
+      </div>
+      <div className="mb-6">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 flex items-center gap-2 w-full">
+          <div className="relative flex-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
             >
-              {[
-                'Yard Name',
-                'Location',
-                'Country',
-                'Contact Person',
-                'Actions',
-              ].map((header) => (
-                <TableCell
-                  key={header}
-                  sx={{
-                    fontWeight: 700,
-                    color: '#374151',
-                    fontSize: '0.95rem',
-                    py: 1.5,
-                    borderBottom: '2px solid #e2e8f0',
-                  }}
-                >
-                  {header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search yards..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full h-11 rounded-md border border-gray-200 pl-10 pr-3 text-lg outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            onClick={handleAddYard}
+            className="h-11 px-4 rounded-md text-white text-base font-medium cursor-pointer flex items-center gap-2"
+            style={{
+              backgroundColor: '#1976d2',
+              border: '1px solid #1976d2',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1565c0'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#1976d2'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Yard
+          </button>
+        </div>
+      </div>
 
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><Skeleton variant="text" width={150} /></TableCell>
-                  <TableCell><Skeleton variant="text" width={200} /></TableCell>
-                  <TableCell><Skeleton variant="text" width={120} /></TableCell>
-                  <TableCell><Skeleton variant="text" width={100} /></TableCell>
-                  <TableCell><Skeleton variant="rectangular" width={120} height={32} sx={{ borderRadius: 1 }} /></TableCell>
-                </TableRow>
-              ))
-            ) : filteredData && filteredData.length > 0 ? (
-              filteredData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((yard) => (
-                  <TableRow
-                    key={yard._id}
-                    hover
-                    sx={{
-                      transition: 'all 0.25s ease',
-                      borderBottom: '1px solid #f1f5f9',
-                      '&:hover': {
-                        backgroundColor: '#f8fafc',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      },
-                    }}
-                  >
-                    <TableCell sx={{ py: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Warehouse sx={{ fontSize: 20, color: '#1976d2' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {yard.yardName || 'N/A'}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ color: '#475569', py: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'start', gap: 1 }}>
-                        <LocationOn sx={{ fontSize: 16, color: '#94a3b8', mt: 0.5 }} />
-                        <Typography variant="body2">
-                          {yard.address ? `${yard.address}, ${yard.city || ''}, ${yard.state || ''} ${yard.zipCode || ''}`.trim() : 'N/A'}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ color: '#64748b', py: 2 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {yard.country || 'N/A'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ color: '#475569', py: 2 }}>
-                      <Typography variant="body2">
-                        {yard.contactPerson || 'N/A'}
-                      </Typography>
-                      {yard.contactPhone && (
-                        <Typography variant="caption" color="text.secondary">
-                          {yard.contactPhone}
-                        </Typography>
-                      )}
-                    </TableCell>
+      <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+        <div className="overflow-x-auto p-4">
+          <table className="min-w-full border-separate border-spacing-y-4">
+            <thead>
+              <tr className="text-left bg-slate-100">
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 rounded-l-xl border-t border-b border-l border-gray-200">Yard Name</th>
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">Location</th>
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">Country</th>
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 border-t border-b border-gray-200">Contact Person</th>
+                <th className="px-4 py-3 text-base font-semibold text-gray-500 rounded-r-xl border-t border-b border-r border-gray-200">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td className="px-4 py-6 text-center text-sm text-slate-500" colSpan={5}>Loading…</td>
+                </tr>
+              ) : totalItems === 0 ? (
+                <tr>
+                  <td className="px-4 py-6 text-center text-sm text-slate-500" colSpan={5}>
+                    {yardsData.length === 0 ? 'No yards found. Add your first yard!' : 'No yards match your search criteria'}
+                  </td>
+                </tr>
+              ) : (
+                visibleYards.map((yard) => (
+                  <tr key={yard._id} className="hover:bg-slate-50">
+                   <td className="px-5 py-4 font-medium text-gray-700 rounded-l-xl border-t border-b border-l border-gray-200">
+  <div className="flex items-center gap-2 relative group max-w-[180px]">
+    
+    {/* <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21V7a2 2 0 0 1 2-2h3v16H3z"></path>
+        <path d="M9 21V3h6v18"></path>
+        <path d="M15 21V9h4a2 2 0 0 1 2 2v10h-6z"></path>
+      </svg>
+    </span> */}
 
-                    <TableCell sx={{ py: 2 }}>
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<Visibility />}
+    <span className="block truncate">
+      {yard.yardName || 'N/A'}
+    </span>
+
+    {/* Tooltip */}
+    {yard.yardName && (
+      <div className="absolute left-0 top-full mt-1 hidden group-hover:block 
+                      bg-gray-900 text-white text-sm px-3 py-1.5 
+                      rounded-md shadow-lg whitespace-nowrap z-50">
+        {yard.yardName}
+      </div>
+    )}
+
+  </div>
+</td>
+                   <td className="px-5 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
+  <div className="relative group max-w-[270px]">
+
+    <span className="block truncate">
+      {yard.address
+        ? `${yard.address}, ${yard.city || ''}, ${yard.state || ''} ${yard.zipCode || ''}`.trim()
+        : 'N/A'}
+    </span>
+
+    {/* Tooltip */}
+    {yard.address && (
+      <div className="absolute left-0 top-full mt-1 hidden group-hover:block
+                      bg-gray-900 text-white text-sm px-3 py-1.5
+                      rounded-md shadow-lg whitespace-nowrap z-50">
+        {`${yard.address}, ${yard.city || ''}, ${yard.state || ''} ${yard.zipCode || ''}`.trim()}
+      </div>
+    )}
+
+  </div>
+</td>
+                    <td className="px-5 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
+                      {yard.country || 'N/A'}
+                    </td>
+                    <td className="px-5 py-4 font-medium text-gray-700 border-t border-b border-gray-200">
+                      <div className="flex flex-col">
+                        <span>{yard.contactPerson || 'N/A'}</span>
+                        {yard.contactPhone ? <span className="text-sm text-slate-500">{yard.contactPhone}</span> : null}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 rounded-r-xl border-t border-b border-r border-gray-200">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
                           onClick={() => handleViewYard(yard)}
-                          sx={{
-                            fontSize: '0.7rem',
-                            px: 1.5,
-                            py: 0.5,
-                            textTransform: 'none',
-                            color: '#2563eb',
-                            borderColor: '#bfdbfe',
-                            backgroundColor: '#eff6ff',
-                            fontWeight: 600,
-                            '&:hover': {
-                              backgroundColor: '#2563eb',
-                              color: '#fff',
-                              borderColor: '#2563eb',
-                            },
-                          }}
+                          className="h-8 px-3 rounded-md border border-blue-600 text-blue-600 text-base cursor-pointer font-medium hover:bg-blue-600 hover:text-white"
                         >
                           View
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<Edit />}
+                        </button>
+                        <button
                           onClick={() => handleEditYard(yard)}
-                          sx={{
-                            fontSize: '0.7rem',
-                            px: 1.5,
-                            py: 0.5,
-                            textTransform: 'none',
-                            color: '#0284c7',
-                            borderColor: '#bae6fd',
-                            backgroundColor: '#f0f9ff',
-                            fontWeight: 600,
-                            '&:hover': {
-                              backgroundColor: '#0284c7',
-                              color: '#fff',
-                              borderColor: '#0284c7',
-                            },
-                          }}
+                          className="h-8 px-3 rounded-md border border-cyan-600 text-cyan-600 text-base cursor-pointer font-medium hover:bg-cyan-600 hover:text-white"
                         >
                           Edit
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<Delete />}
-                          onClick={() => handleDeleteYard(yard._id)}
-                          sx={{
-                            fontSize: '0.7rem',
-                            px: 1.5,
-                            py: 0.5,
-                            textTransform: 'none',
-                            color: '#dc2626',
-                            borderColor: '#fecaca',
-                            backgroundColor: '#fef2f2',
-                            fontWeight: 600,
-                            '&:hover': {
-                              backgroundColor: '#dc2626',
-                              color: '#fff',
-                              borderColor: '#dc2626',
-                            },
-                          }}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDialogOpen(yard)}
+                          className="h-8 px-3 rounded-md border border-red-600 text-red-600 text-base cursor-pointer font-medium hover:bg-red-600 hover:text-white"
                         >
                           Delete
-                        </Button>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <Warehouse sx={{ fontSize: 48, color: '#cbd5e1' }} />
-                    <Typography variant="h6" color="text.secondary" fontWeight={600}>
-                      No yards found
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {yardsData.length === 0
-                        ? 'Add your first yard to get started!'
-                        : 'Try adjusting your search criteria'}
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        <TablePagination
-          component="div"
-          count={filteredData ? filteredData.length : 0}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25]}
-          sx={{
-            borderTop: '1px solid #e0e0e0',
-            backgroundColor: '#fafafa'
-          }}
-        />
-      </Paper>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmDeleteOpen} onClose={handleDeleteDialogClose} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'white', fontWeight: 700 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ pt: 2 }}>
+            Are you sure you want to delete {deleteTarget?.yardName ? `"${deleteTarget.yardName}"` : 'this yard'}? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleDeleteDialogClose}
+            variant="outlined"
+            sx={{ borderRadius: 2, textTransform: 'none', color: 'blue', '&:hover': { backgroundColor:"blue", color:"white" } }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={confirmDelete}
+            disabled={deleting}
+            sx={{ borderRadius: 2, textTransform: 'none' }}
+          >
+            {deleting ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <div className="mt-2 border border-gray-200 rounded-lg bg-white px-4 py-3 flex items-center justify-between pr-40">
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <span>{`Showing ${totalItems === 0 ? 0 : pageStart + 1} to ${pageEnd} of ${totalItems} yards`}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="inline-flex items-center gap-2 font-medium text-gray-700">
+            <span>Rows per page</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              className="h-8 rounded-md border border-slate-300 px-2 text-sm bg-white cursor-pointer"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+            </select>
+          </label>
+          <button
+            onClick={() => setPage(Math.max(0, clampedPage - 1))}
+            disabled={clampedPage === 0}
+            className={`h-8 px-3 text-base ${clampedPage === 0 ? "text-slate-400 rounded-full cursor-not-allowed" : "text-slate-900 font-semibold cursor-pointer rounded-md"}`}
+          >
+            Previous
+          </button>
+          {getPageNumbers().map((num, idx) =>
+            num === '…' ? (
+              <span key={`e-${idx}`} className="px-1 text-gray-900">…</span>
+            ) : (
+              <button
+                key={num}
+                onClick={() => setPage(Number(num) - 1)}
+                className={`min-w-8 h-8 px-2 rounded-xl text-base cursor-pointer ${num === clampedPage + 1 ? "border border-gray-900" : "text-slate-700"}`}
+              >
+                {num}
+              </button>
+            )
+          )}
+          <button
+            onClick={() => setPage(Math.min(totalPages - 1, clampedPage + 1))}
+            disabled={clampedPage >= totalPages - 1}
+            className={`h-8 px-3 text-base ${clampedPage >= totalPages - 1 ? "text-slate-400 rounded-full cursor-not-allowed" : "text-slate-900 font-semibold cursor-pointer rounded-md"}`}
+          >
+            Next
+          </button>
+        </div>
+      </div>
 
       {/* Add/Edit Yard Modal */}
       <Dialog
@@ -1299,16 +1315,16 @@ const Yard = () => {
             sx={{
               borderRadius: 2,
               textTransform: 'none',
-              borderColor: '#cbd5e1',
-              color: '#64748b',
+              borderColor: 'red',
+              color: 'red',
               px: 4,
               py: 1,
               fontWeight: 500,
               fontSize: '0.95rem',
               '&:hover': {
-                backgroundColor: '#f0f7ff',
-                borderColor: '#357ABD',
-                color: '#357ABD',
+                backgroundColor: 'red',
+                borderColor: 'red',
+                color: 'white',
               },
             }}
           >
@@ -1324,10 +1340,11 @@ const Yard = () => {
               backgroundColor: '#2F5AA8',
               px: 4,
               py: 1,
+              color: 'white',
               fontWeight: 600,
               fontSize: '0.95rem',
               '&:hover': {
-                backgroundColor: '#244A8F',
+                backgroundColor: '#244A8F'
               },
               '&:disabled': {
                 backgroundColor: '#94a3b8',
