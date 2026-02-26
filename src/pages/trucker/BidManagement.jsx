@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -77,6 +78,8 @@ const Dashboard = () => {
   const { socket } = useSocket();
   const [negotiationHistory, setNegotiationHistory] = useState(null);
   const [negotiationMessage, setNegotiationMessage] = useState("");
+  const negotiationPollInFlightRef = useRef(false);
+  const [negotiationMessage, setNegotiationMessage] = useState('');
   const [negotiationLoading, setNegotiationLoading] = useState(false);
 
   const formatCityState = (obj) => {
@@ -603,11 +606,14 @@ const Dashboard = () => {
     }
   };
 
-  // Polling for negotiation history updates
+  // Polling for negotiation history updates (throttled: 15s + in-flight guard to avoid rapid API calls)
+  const NEGOTIATION_POLL_INTERVAL_MS = 15000;
   useEffect(() => {
     let interval;
     if (viewDetailsModalOpen && selectedBidDetails) {
       interval = setInterval(async () => {
+        if (negotiationPollInFlightRef.current) return;
+        negotiationPollInFlightRef.current = true;
         try {
           const token = localStorage.getItem("token");
           const bidId = selectedBidDetails.bidId || selectedBidDetails._id;
@@ -634,16 +640,20 @@ const Dashboard = () => {
                 // We just return the new data to update the UI
                 return response.data.data;
               }
+              if (newHistory.length > prevHistory.length) return response.data.data;
               return prev;
             });
           }
         } catch (err) {
           console.error("Error polling negotiation history:", err);
+          console.error('Error polling negotiation history:', err);
+        } finally {
+          negotiationPollInFlightRef.current = false;
         }
-      }, 3000);
+      }, NEGOTIATION_POLL_INTERVAL_MS);
     }
-    return () => clearInterval(interval);
-  }, [viewDetailsModalOpen, selectedBidDetails, addNotification]);
+    return () => (interval && clearInterval(interval));
+  }, [viewDetailsModalOpen, selectedBidDetails]);
 
   return (
     <Box sx={{ p: 3 }}>
